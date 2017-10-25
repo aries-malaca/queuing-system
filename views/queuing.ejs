@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+
+<!-- BEGIN HEAD -->
+<head>
+<meta charset="utf-8"/>
+<title>Queuing Screen: <%= branch_name %> </title>
+<!-- BEGIN GLOBAL MANDATORY STYLES -->
+<style>
+	[v-cloak] { display:none; }
+	#main,body{
+		background-color:white !important;
+		font-family: "Century Gothic" !important;
+	}
+    #main{
+        min-height:700px;
+    }
+    .center-text{
+        text-align:center;
+        font-style: italic;
+    }
+    .grey-text{
+        color: #7d7d7d;
+    }
+    .pink-text{
+        color: #ec068e;
+    }
+    .white-text, .name, .details{
+        color:white;
+    }
+    .name{
+        font-size:32px;
+        display:block;
+        text-align:center;
+        font-weight: bold;
+        font-style: italic;
+    }
+    .pink-background{
+        background-color:#ec068e;
+    }
+    .purple-background{
+        background-color:#bd6dac;
+    }
+    .grey-background{
+        background-color:#7d7d7d;
+    }
+    .oval{
+        display:block;
+        border-radius:10px !important;
+        height:69px;
+        padding:10px 5px;
+        margin:10px 0px;
+    }
+    .details{
+        font-size:11px;
+        font-weight: bold;
+        font-style: italic;
+    }
+     @font-face {
+	  font-family: 'Century Gothic';
+	  font-style: bold;
+	  font-weight: 1500;
+	  src: local('Century Gothic'), local('CenturyGothic'), url(https://fonts.gstatic.com/l/font?kit=Yeh3y7ciGQhij8XzUSI-wDLItwS-qy_1vxH5V4_Yisk&skey=93c2fdf69b410576&v=v7) format('woff2');
+	  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+	}
+	/* latin */
+	@font-face {
+	  font-family: 'Century Gothic';
+	  font-style: bold;
+	  font-weight: 1500;
+	  src: local('Century Gothic'), local('CenturyGothic'), url(https://fonts.gstatic.com/l/font?kit=Yeh3y7ciGQhij8XzUSI-wORYAdd4IhfhHjBEc43Trp8&skey=93c2fdf69b410576&v=v7) format('woff2');
+	  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
+	}
+	@font-face {
+	  font-family: 'Vladimir';
+	  font-style: italic;
+	  font-weight: 700;
+	  src: local('Vladimir Italic'),local('Vladimir Bold'), url("../fonts/vladimir.tff") format('tff');
+	  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
+	}
+</style>
+
+<link href="../../stylesheets/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../stylesheets/simple-line-icons.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../stylesheets/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../stylesheets/uniform.default.css" rel="stylesheet" type="text/css"/>
+<link href="../../stylesheets/bootstrap-switch.min.css" rel="stylesheet" type="text/css"/>
+<!-- END GLOBAL MANDATORY STYLES -->
+
+<!-- BEGIN THEME STYLES -->
+<link href="../../stylesheets/components.css" id="style_components" rel="stylesheet" type="text/css"/>
+<link href="../../stylesheets/plugins.css" rel="stylesheet" type="text/css"/>
+<link href="../../stylesheets/layout.css" rel="stylesheet" type="text/css"/>
+<link id="style_color" href="../../stylesheets/darkblue.css" rel="stylesheet" type="text/css"/>
+<link href="../../stylesheets/custom.css" rel="stylesheet" type="text/css"/>
+
+
+</head>
+<body>
+
+<div id="main">
+    <input type="hidden" value="<%= id %>" id="br" />
+    <input type="hidden" value="<%= branch_name %>" id="br_name" />
+    <input type="hidden" value="<%= rooms %>" id="rooms" />
+    <div class="row-fluid" v-if="1==0">
+        <div class="col-md-12">
+            <br/>
+            <h1 class="center-text brown-text">
+               {{ branch_name }}
+            </h1>
+        </div>
+    </div>
+    <div class="row-fluid" v-if="listServing.length>0">
+        <div class="col-md-12">
+            <h1 class="center-text grey-text">
+                Serving
+            </h1>
+        </div>
+        <div v-for="(serving_item,key) in listServing">
+            <div class="pink-background oval">
+                <div class="col-xs-7">
+                    <span class="name">{{ getFirstName(serving_item.name) }}</span>
+                </div>
+                <div class="col-xs-5">
+                    <span class="details">
+                        {{ serving_item.reserve_id }}<br/>	 
+                        Tech.: {{ getFirstName(serving_item.technician) }}<br/>	 
+						Time: {{ getTime(serving_item.time) }}<br/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="col-md-12">
+            <h1 class="center-text pink-text">
+                Upnext
+            </h1>
+        </div>
+		<div  v-for="(queue_item,key) in queue" v-if="isInClientCall(key)!==false">
+			<div class="purple-background oval">
+				<div class="col-xs-7">
+					<span class="name">{{ getFirstName(queue_item.clname) }}</span> 
+				</div>
+				<div class="col-xs-5" >
+					<span class="details">
+					  {{ isInClientCall(key).reserve_id }}<br/>	 
+					  Tech.: {{ getFirstName(isInClientCall(key).techfname) }}<br/>	 
+					  Time: {{ getTime(isInClientCall(key).start_time) }}<br/>
+					</span>
+				</div>
+			</div>
+		</div>
+        <div v-for="(queue_item,key) in queue" v-if="hasReserved(key)!==false">
+            <div class="grey-background oval">
+                <div class="col-xs-7">
+                    <span class="name">{{ getFirstName(queue_item.clname) }}</span>
+                </div>
+                <div class="col-xs-5">
+                    <span class="details">
+                        {{ queue_item.appointments[hasReserved(key)].reserve_id }}<br/>	 
+                        Tech.: {{ getFirstName(queue_item.appointments[hasReserved(key)].techfname) }}<br/>	 
+						Time: {{ getTime(queue_item.appointments[hasReserved(key)].start_time) }}<br/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="audio">
+  <source src="../../bell2.ogg" type="audio/ogg">
+    Your browser does not support the audio element.
+</audio>
+
+<!--  Load the javascript files  -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+<script type="text/javascript">
+	//client side socket io instance, stablish connection to NodeJS server...
+	var socket = io.connect('https://system.lay-bare.com:3000');	
+
+	// ----------- START client side Socket Event Listeners ------//
+
+	socket.on('callAppointment', function(branch_id, appointment_id,data){
+		//check if the event comes from the same branch...
+		if(Number(document.getElementById("br").value) == branch_id){
+			//push data into vue_queuing.user_calling array...
+			vue_queuing.user_calling.push(data); 	
+		}
+	});
+
+	socket.on('unCallAppointment', function(branch_id, appointment_id){
+		//check if the event comes from the same branch...
+		if(Number(document.getElementById("br").value) == branch_id){
+
+			//look for appointment_id inside the vue_queuing.user_calling array, so we can get its index
+			for(var x=0;x<vue_queuing.user_calling.length;x++){
+				//if matched, the appointment will be removed from vue_queuing.user_calling array
+				if(vue_queuing.user_calling[x].reserve_id == appointment_id)
+					vue_queuing.user_calling.splice(x,1);
+			}
+		}
+	});
+
+	socket.on('serveAppointment', function(branch_id, appointment_id,data){
+		//check if the event comes from the same branch...
+		if(Number(document.getElementById("br").value) == branch_id){
+			//push data into vue_queuing.user_serving array
+			vue_queuing.user_serving.push(data);
+
+			//then remove that appointment from vue_queuing.user_calling array
+			for(var x=0;x<vue_queuing.user_calling.length;x++){
+				if(vue_queuing.user_calling[x].reserve_id == appointment_id)
+					vue_queuing.user_calling.splice(x,1);
+			}
+		}
+	});
+
+	socket.on('unServeAppointment', function(branch_id, appointment_id){
+		//check if the event comes from the same branch...
+		if(Number(document.getElementById("br").value) == branch_id){
+			//look for the appointment from the vue_queuing.user_serving and remove it 
+			for(var x=0;x<vue_queuing.user_serving.length;x++){
+				if(vue_queuing.user_serving[x].reserve_id == appointment_id)
+					vue_queuing.user_serving.splice(x,1);
+			}
+		}
+	});
+
+	socket.on('playSound', function(branch_id){
+		//check if the event comes from the same branch...
+		if(Number(document.getElementById("br").value) == branch_id ){
+			//this applies only on queing tv page ...
+			if($("#audio").length>0){
+				vue_queuing.playBack();
+			}
+		}
+	});
+	socket.on('refreshQueue', function(branch_id){
+		//check if the event comes from the same branch...
+		if(Number(document.getElementById("br").value) == branch_id ){
+			//this applies only on queing tv page ...
+			vue_queuing.refreshTextFile();
+		}
+	});
+	// ----------- END client side Socket Event Listeners ------//
+
+
+	// ----------- START VueJS instance ------//
+
+	// the instance should be accessible by other objects...
+	var vue_queuing = new Vue({
+		//inside the element with id main, vue_queing data, and methods will be accessible.
+		el:'#main',		
+		//stores our vuejs instance's data.
+		data:{			
+			branch_id: Number(document.getElementById("br").value),	
+			branch_name: document.getElementById("br_name").value,
+			rooms: Number(document.getElementById("rooms").value),
+			queue:[],	
+			user_calling:[],
+			user_serving:[],
+			filter:{
+				search:''
+			}
+		},
+		//stores our vuejs instance's methods/functions.
+		methods:{		
+			//function that refreshes the text file for the current branch
+			refreshTextFile:function(){
+				var id = this.branch_id;
+				var name = this.branch_name;
+				var rooms = this.rooms;
+				$.get('https://system.lay-bare.com/ajax_updatequeue_new.php?id='+ id +'&name=' + name + '&rooms=' + rooms, 
+					function(d){
+						//calls fetchQueue function, note: we would use the vue_queuing instead of this because we're inside an anonymous function inside $.get() method.
+						vue_queuing.fetchQueue(id);
+					}
+				);
+			},
+			//refereshes the vue_queuing.queue.
+			fetchQueue: function(){
+				var id = this.branch_id;
+				$.ajax({
+					url:'https://system.lay-bare.com:3000/getData/'+id ,
+					success: function(data){
+						if(data.result == 'success'){
+							//set values into empty array.
+							vue_queuing.queue = [];
+							vue_queuing.user_calling = [];
+							vue_queuing.user_serving = [];
+
+							//push every clients
+							for(var x = 0; x< data.data.clients.length;x++)
+								vue_queuing.queue.push(data.data.clients[x]);
+
+
+							for(var x = 0; x< data.data.user_calling.length;x++){
+								//push into calling if not older than 1 minute
+								if((data.data.user_calling[x].time_added + 60000) > Date.now())
+									vue_queuing.user_calling.push(data.data.user_calling[x]);
+								else
+									vue_queuing.unCallAppointment(data.data.user_calling[x]);
+							}
+							
+							for(var x = 0; x< data.data.user_serving.length;x++){
+								
+								//check if the appointment is expired then unserve it or else push it to serving array
+								if(vue_queuing.isServeExpired(data.data.user_serving[x]) || !vue_queuing.checkIfInQueue(data.data.user_serving[x].reserve_id) ){
+									vue_queuing.unServeAppointment(data.data.user_serving[x]);
+								}
+								else{
+									if(!vue_queuing.isInServe(data.data.user_serving[x].reserve_id) ){
+										vue_queuing.user_serving.push(data.data.user_serving[x]);
+									}
+								}
+									
+							}
+						}
+					}
+				});
+			},
+			playBack:function(){
+				new Audio('../../bell2.ogg').play();
+			},
+			///-----END Queuing Events ---//
+
+			//----START Helper Functions ----//
+
+			//param:appointment_id(Number), check if the appointment is calling, returns boolean
+			isInCall:function(id){
+				for(var x = 0; x<this.user_calling.length;x++){
+					if(id == this.user_calling[x].reserve_id)
+						return true;
+				}
+				return false;
+			},
+
+			//param:appointment_id(Number), check if the appointment is serving, returns boolean
+			isInServe:function(appointment_id){
+				for(var x = 0; x<this.user_serving.length;x++){
+					if(appointment_id == this.user_serving[x].reserve_id)
+						return true;
+				}
+				return false;
+			},
+
+			//param:appointment(object), returns boolean
+			isServeExpired:function(appointment){
+				if(moment(appointment.time_added).format("MMMM/DD/YYYY") == moment().format("MMMM/DD/YYYY")){
+					return false;
+				}
+				return true;
+			},
+
+			//param:key(Number), check if the client is currently calling, returns appointment object if true else false
+			isInClientCall:function(key){ //return reserve id
+				for(var x = 0; x<this.queue[key].appointments.length;x++){
+					if(this.isInCall(this.queue[key].appointments[x].reserve_id))
+						return this.queue[key].appointments[x];
+				}
+				return false;
+			},
+
+			//param:key(Number), check if the client is currently serving, returns appointment object if true else false
+			isInClientServe:function(key){
+				for(var x = 0; x<this.queue[key].appointments.length;x++){
+					if(this.isInServe(this.queue[key].appointments[x].reserve_id))
+						return this.queue[key].appointments[x];
+				}
+				return false;
+			},
+
+			//param:appointment(object), determine the appopriate color for the tr based on status, returns string
+			getBackGround:function(appointment){
+				if(this.isInServe(appointment.reserve_id))
+					return 'background-color:#FFCCFF';
+
+				if(this.isInCall(appointment.reserve_id))
+					return 'background-color:#AAFFAA';
+
+				if(this.isNoShow(appointment))
+					return 'background-color:#FFCCCC';
+
+				return 'background-color:#FFFFAA';
+			},
+
+			getServeStartTime:function(id,format){
+				for(var x = 0; x<this.user_serving.length;x++){
+					if(this.user_serving[x].reserve_id == id){
+						if(format == 'raw'){
+							return moment(this.user_serving[x].time_added).format("HH:mm:ss");
+						}
+						return moment(this.user_serving[x].time_added).format(format);
+					}
+				}
+				return 0;
+			},
+
+			//param: client_name(string), returns first word of client_name
+			getFirstName:function(client_name){
+                if(client_name == ""){
+                    return client_name;
+                }
+				var arr = client_name.split(" ");
+				return arr[0];
+			},
+
+			//param: appointment(object), returns string.
+			getStatus:function(appointment){
+				if(this.isInServe(appointment.reserve_id))
+					return 'Serving';
+
+				if(this.isInCall(appointment.reserve_id))
+					return 'Calling';
+
+				if(this.isNoShow(appointment))
+					return 'No-show';
+
+				return appointment.status;
+			},
+
+			//param:key(Number), determine if the client has reserved appointment status (can be missed or noshow), returns boolean
+			hasPending:function(key){
+				for(var x=0;x<this.queue[key].appointments.length;x++){
+					if(this.queue[key].appointments[x].status == 'reserved')
+						return true;
+				}
+				return false;
+			},
+
+			//param:key(Number), determine if the client has reserved appointment (not missed & not noshow), returns boolean
+			hasReserved:function(key){
+				for(var x=0;x<this.queue[key].appointments.length;x++){
+					if(this.queue[key].appointments[x].status == 'reserved' && 
+						!this.isNoShow(this.queue[key].appointments[x]) && 
+						!this.isMissed(this.queue[key].appointments[x]) && 
+						this.isInClientCall(key) === false && 
+						this.isInClientServe(key) === false){
+						return x;
+					}
+				}
+				return false;
+			},
+
+			//param:key(Number), determine if the client has completed appointment yet, returns boolean
+			hasCompleted:function(key){
+				for(var x=0;x<this.queue[key].appointments.length;x++){
+					if(this.queue[key].appointments[x].status == 'completed')
+						return true;
+				}
+				return false;
+			},
+
+			//param: t(string), returns unixtimestamp in miliseconds 
+			unixTime:function(string){
+				return Number(moment(string).format('x'));
+			},
+
+			//param: appointment(object), determine if the appoinment is missed, returns boolean
+			isMissed:function(appointment){
+				if((Date.now() - this.unixTime(moment().format('MM/DD/YYYY') + ' ' + appointment.start_time) <1800000) &&
+							(Date.now() - this.unixTime(moment().format('MM/DD/YYYY') + ' ' + appointment.start_time) > this.appointmentLength(appointment)) &&
+							appointment.status == 'reserved'
+					)
+					return true;
+				
+				return false;
+			},
+
+			//param: appointment(object), determine if the appoinment is no show, returns boolean
+			isNoShow:function(appointment){
+				if( (Date.now() - this.unixTime(appointment.start_time) ) >1800000  )
+					return true;
+				
+				return false;	
+			},
+
+			//param: appointment(object), returns appointment length in milliseconds
+			appointmentLength:function(appointment){
+				return Number(moment(moment().format('MM/DD/YYYY') + ' ' + appointment.end_time).format('x')) - 
+					Number(moment(moment().format('MM/DD/YYYY') + ' ' + appointment.start_time).format('x'))
+			},
+			
+			//determine if the current branch's rooms are full based on serving, returns boolean
+			hasReachedRoomLimit:function(){
+				if( this.user_serving.length >= this.rooms){
+					return true;
+				}
+				//default return
+				return false;
+			},
+
+			//check if the appointment is in the queue.....
+			checkIfInQueue:function(reserve_id){
+				
+				for(var x=0;x<this.queue.length;x++){
+					for(var y=0;y<this.queue[x].appointments.length;y++){
+						if(this.queue[x].appointments[y].reserve_id == reserve_id && this.queue[x].appointments[y].status == 'reserved'){
+							
+							return true;
+						}
+					}
+				}
+				return false;
+			},
+			//param: t(string), returns: string
+			getTime:function(t){
+				return moment(moment().format("MM/DD/YYYY") +' ' + t).format("LT");
+			},
+
+            getAppointmentData:function(reserve_id){
+                for(var x=0;x<this.queue.length;x++){
+                    for(var y=0;y<this.queue[x].appointments.length;y++){
+                        if(reserve_id == Number(this.queue[x].appointments[y].reserve_id)){
+                            return this.queue[x].appointments[y];
+                        }
+                    }
+                }
+                return false;
+            }
+
+			//----END Helper Functions ----//
+		},
+		//mounted is a function that automatically called when vuejs instance is ready.
+		mounted:function(){
+			//stablish initial sockets connection
+			$.ajax({
+				url:'https://system.lay-bare.com:3000',
+				success: function(data){}//no callback
+			});
+
+			//initial call
+			this.refreshTextFile();
+		},
+		//computed properties are dynamic properties which automatically refreshed when changes in data inside them occur. 
+		computed: {
+			//returns array of first 6 clients to be shown in LCD TV,
+			filteredQueue:function(){
+				return this.queue.slice(0, 6 - this.user_calling.length);
+			},
+
+			//returns list of serving appointments as string
+			listServing:function(){
+				var data = [];
+
+				for(var x = 0; x<this.user_serving.length;x++){
+                    var app_data = this.getAppointmentData(this.user_serving[x].reserve_id);
+                    if(app_data !== false){
+                        data.push({ reserve_id:this.user_serving[x].reserve_id,
+                                    name:app_data.clname,
+                                    technician:app_data.techfname,
+                                    time:app_data.start_time    
+                                });
+                    }
+                }
+
+				//return
+				return data;
+			},
+			//used to evaluate if there is appointment/s for completion
+			forCompletion:function(){
+				var data = [];
+				for(var x = 0; x<this.queue.length;x++){
+					for(var y = 0; y<this.queue[x].appointments.length;y++){
+						//return true if 1 apointment is missed
+						if(this.isMissed(this.queue[x].appointments[y])) 
+							return true;
+					}
+				}
+				//default return value
+				return false;
+			}
+		}
+	});
+
+	// ----------- END VueJS instance ------//
+	// ----------- END VueJS instance ------//
+</script>
+
+</body>
+<!-- END BODY -->
+</html>
